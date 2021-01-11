@@ -27,6 +27,10 @@ mongoose
 
 app.get('/', (req, res) => res.send('hello world 안녕!!!'));
 
+app.get('/api/hello', (req, res) => {
+    res.send('안녕하세요');
+});
+
 app.post('/api/users/register', (req, res) => {
     // 회원가입 할때 필요한 정보들을 client에서 가져오면
     // 그것들을 데이터 베이스에 넣어준다.
@@ -70,6 +74,7 @@ app.post('/api/users/login', (req, res) => {
     });
 });
 
+// 로그인된 유저만 접근할 수 있게 만들어준다.
 app.get('/api/users/auth', auth, (req, res) => {
     res.status(200).json({
         _id: req.user._id,
@@ -81,6 +86,23 @@ app.get('/api/users/auth', auth, (req, res) => {
         role: req.user.role,
         image: req.user.image,
     });
+});
+
+app.get('/api/users/logout', auth, (req, res) => {
+    User.findOneAndUpdate(
+        {
+            _id: req.user._id,
+        },
+        { token: '' },
+        (err, user) => {
+            if (err)
+                return res.json({
+                    success: false,
+                    err,
+                });
+            return res.status(200).send({ success: true });
+        },
+    );
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
